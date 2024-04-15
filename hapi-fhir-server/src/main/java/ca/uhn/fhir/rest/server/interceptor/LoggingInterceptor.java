@@ -34,6 +34,7 @@ import ca.uhn.fhir.util.UrlUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.text.StringSubstitutor;
@@ -42,6 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Map.Entry;
 
@@ -166,16 +169,50 @@ public class LoggingInterceptor {
 		return true;
 	}
 
+//	@Hook(Pointcut.SERVER_PROCESSING_COMPLETED_NORMALLY)
+//	public void processingCompletedNormally(ServletRequestDetails theRequestDetails) {
+//		// Perform any string substitutions from the message format
+//		StringLookup lookup = new MyLookup(theRequestDetails.getServletRequest(), theRequestDetails);
+//		StringSubstitutor subs = new StringSubstitutor(lookup, "${", "}", '\\');
+//
+//		// Actually log the line
+//		String line = subs.replace(myMessageFormat);
+//		myLogger.info(line);
+//	}
+
+
 	@Hook(Pointcut.SERVER_PROCESSING_COMPLETED_NORMALLY)
 	public void processingCompletedNormally(ServletRequestDetails theRequestDetails) {
+		// Extract the request JSON
+		String requestJson = extractRequestJson(theRequestDetails);
+
 		// Perform any string substitutions from the message format
 		StringLookup lookup = new MyLookup(theRequestDetails.getServletRequest(), theRequestDetails);
 		StringSubstitutor subs = new StringSubstitutor(lookup, "${", "}", '\\');
 
+		// Replace the placeholder for request JSON with the actual JSON data
+		String messageFormatWithJson = myMessageFormat.replace("${requestJson}", requestJson);
+
 		// Actually log the line
-		String line = subs.replace(myMessageFormat);
+		String line = subs.replace(messageFormatWithJson);
 		myLogger.info(line);
 	}
+
+	private String extractRequestJson(ServletRequestDetails theRequestDetails) {
+		try {
+			// Get the InputStream of the request body
+			InputStream inputStream = theRequestDetails.getInputStream();
+			// Read the request body as a String
+			String requestBody = IOUtils.toString(inputStream, Charset.defaultCharset());
+			// You may need to parse the requestBody to extract the JSON data based on your application's request structure
+			return requestBody;
+		} catch (IOException e) {
+			// Handle IO exception
+			ourLog.error("Could not extract request JSON", e);
+			return null;
+		}
+	}
+
 
 	/**
 	 * Should exceptions be logged by this logger
