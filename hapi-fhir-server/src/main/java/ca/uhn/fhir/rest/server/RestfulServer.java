@@ -1488,7 +1488,8 @@ public class RestfulServer extends HttpServlet implements IRestfulServer<Servlet
 		LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
 		registerInterceptor(loggingInterceptor);
 		loggingInterceptor.setLoggerName("test.accesslog");
-		loggingInterceptor.setMessageFormat("Source[${remoteAddr}] Operation[${operationType} ${idOrResourceName}] UA[${requestHeader.user-agent}] Params[${requestParameters}]");
+		loggingInterceptor.setMessageFormat(
+				"Source[${remoteAddr}] Operation[${operationType} ${idOrResourceName}] UA[${requestHeader.user-agent}] Params[${requestParameters}]");
 	}
 
 	private void invokeDestroy(Object theProvider) {

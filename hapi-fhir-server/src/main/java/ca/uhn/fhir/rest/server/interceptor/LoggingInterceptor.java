@@ -143,32 +143,37 @@ public class LoggingInterceptor {
 		super();
 	}
 
-
-	public static String logHttpServletRequest(HttpServletRequest request, byte[] byteInputStream, boolean showPayload) {
+	public static String logHttpServletRequest(
+			HttpServletRequest request, byte[] byteInputStream, boolean showPayload) {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(System.lineSeparator()).append("[ REQUEST SUMMARY ]");
 		stringBuilder
-			.append("\tRequest: ")
-			.append(request.getMethod())
-			.append(request.getRequestURI())
-			.append(System.lineSeparator());
+				.append("\tRequest: ")
+				.append(request.getMethod())
+				.append(request.getRequestURI())
+				.append(System.lineSeparator());
 		Enumeration<String> headerNames = request.getHeaderNames();
 		stringBuilder.append("\tHeaders:").append(System.lineSeparator());
 		while (headerNames.hasMoreElements()) {
 			String headerName = headerNames.nextElement();
 			String headerValue = String.join(", ", Collections.list(request.getHeaders(headerName)));
 			stringBuilder
-				.append("\t")
-				.append(headerName)
-				.append(": ")
-				.append(headerValue)
-				.append(System.lineSeparator());
+					.append("\t")
+					.append(headerName)
+					.append(": ")
+					.append(headerValue)
+					.append(System.lineSeparator());
 		}
 		Map<String, String[]> params = request.getParameterMap();
 		stringBuilder.append("\tParameters:").append(System.lineSeparator());
 		params.forEach((name, values) -> {
 			for (String value : values)
-				stringBuilder.append("\t").append(name).append(": ").append(value).append(System.lineSeparator());
+				stringBuilder
+						.append("\t")
+						.append(name)
+						.append(": ")
+						.append(value)
+						.append(System.lineSeparator());
 		});
 		if (showPayload && byteInputStream != null && byteInputStream.length > 0)
 			stringBuilder.append("Payload:").append(System.lineSeparator()).append(new String(byteInputStream));
@@ -199,7 +204,7 @@ public class LoggingInterceptor {
 			myLogger.info(line);
 
 			this.myLogger.info(
-				logHttpServletRequest(theServletRequest, theRequestDetails.getRequestContentsIfLoaded(), true));
+					logHttpServletRequest(theServletRequest, theRequestDetails.getRequestContentsIfLoaded(), true));
 		}
 		return true;
 	}
@@ -214,8 +219,8 @@ public class LoggingInterceptor {
 		String line = subs.replace(myMessageFormat);
 		myLogger.info(line);
 
-		this.myLogger.info(logHttpServletRequest(theRequestDetails
-			.getServletRequest(), theRequestDetails.getRequestContentsIfLoaded(), false));
+		this.myLogger.info(logHttpServletRequest(
+				theRequestDetails.getServletRequest(), theRequestDetails.getRequestContentsIfLoaded(), false));
 	}
 
 	/**
