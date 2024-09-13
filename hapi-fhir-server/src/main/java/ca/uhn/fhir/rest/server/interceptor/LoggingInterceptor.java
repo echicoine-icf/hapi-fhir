@@ -42,7 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -140,6 +143,38 @@ public class LoggingInterceptor {
 		super();
 	}
 
+
+	public static String logHttpServletRequest(HttpServletRequest request, byte[] byteInputStream, boolean showPayload) {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(System.lineSeparator()).append("[ REQUEST SUMMARY ]");
+		stringBuilder
+			.append("\tRequest: ")
+			.append(request.getMethod())
+			.append(request.getRequestURI())
+			.append(System.lineSeparator());
+		Enumeration<String> headerNames = request.getHeaderNames();
+		stringBuilder.append("\tHeaders:").append(System.lineSeparator());
+		while (headerNames.hasMoreElements()) {
+			String headerName = headerNames.nextElement();
+			String headerValue = String.join(", ", Collections.list(request.getHeaders(headerName)));
+			stringBuilder
+				.append("\t")
+				.append(headerName)
+				.append(": ")
+				.append(headerValue)
+				.append(System.lineSeparator());
+		}
+		Map<String, String[]> params = request.getParameterMap();
+		stringBuilder.append("\tParameters:").append(System.lineSeparator());
+		params.forEach((name, values) -> {
+			for (String value : values)
+				stringBuilder.append("\t").append(name).append(": ").append(value).append(System.lineSeparator());
+		});
+		if (showPayload && byteInputStream != null && byteInputStream.length > 0)
+			stringBuilder.append("Payload:").append(System.lineSeparator()).append(new String(byteInputStream));
+		return stringBuilder.toString();
+	}
+
 	/**
 	 * Get the log message format to be used when logging exceptions
 	 */
@@ -162,6 +197,9 @@ public class LoggingInterceptor {
 			// Actually log the line
 			String line = subs.replace(myErrorMessageFormat);
 			myLogger.info(line);
+
+			this.myLogger.info(
+				logHttpServletRequest(theServletRequest, theRequestDetails.getRequestContentsIfLoaded(), true));
 		}
 		return true;
 	}
@@ -175,6 +213,9 @@ public class LoggingInterceptor {
 		// Actually log the line
 		String line = subs.replace(myMessageFormat);
 		myLogger.info(line);
+
+		this.myLogger.info(logHttpServletRequest(theRequestDetails
+			.getServletRequest(), theRequestDetails.getRequestContentsIfLoaded(), false));
 	}
 
 	/**

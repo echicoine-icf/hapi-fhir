@@ -53,6 +53,7 @@ import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
 import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import ca.uhn.fhir.rest.server.interceptor.ExceptionHandlingInterceptor;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
+import ca.uhn.fhir.rest.server.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.server.method.BaseMethodBinding;
 import ca.uhn.fhir.rest.server.method.ConformanceMethodBinding;
 import ca.uhn.fhir.rest.server.method.MethodMatchEnum;
@@ -1484,7 +1485,10 @@ public class RestfulServer extends HttpServlet implements IRestfulServer<Servlet
 	 *                          that the servlet is not usable.
 	 */
 	protected void initialize() throws ServletException {
-		// nothing by default
+		LoggingInterceptor loggingInterceptor = new LoggingInterceptor();
+		registerInterceptor(loggingInterceptor);
+		loggingInterceptor.setLoggerName("test.accesslog");
+		loggingInterceptor.setMessageFormat("Source[${remoteAddr}] Operation[${operationType} ${idOrResourceName}] UA[${requestHeader.user-agent}] Params[${requestParameters}]");
 	}
 
 	private void invokeDestroy(Object theProvider) {
